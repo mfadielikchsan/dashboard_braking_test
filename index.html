@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard Braking Test</title>
+
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="shortcut icon" href="logo.ico">
+</head>
+
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Dashboard — Braking Test</h1>
+
+    <div class="filters">
+      <input type="date" id="dateFilter">
+      <select id="sesiFilter">
+        <option value="1">Sesi 1</option>
+        <option value="2">Sesi 2</option>
+        <option value="3">Sesi 3</option>
+      </select>
+      <button id="btnLoad">Load</button>
+    </div>
+  </header>
+
+  <!-- CHARTS -->
+  <section class="grid-3">
+    <div class="card">
+      <h3>Braking Distance</h3>
+      <div id="chart-bar"></div>
+    </div>
+
+    <div class="card">
+      <h3>AVG Comparison T1–T5</h3>
+      <div id="chart-avg"></div>
+    </div>
+
+    <div class="card">
+      <h3>Trend Average</h3>
+      <div id="chart-trend"></div>
+    </div>
+  </section>
+
+  <!-- TABLE -->
+  <section class="table-wrap">
+    <h3>Detail Data (meter)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Brand</th>
+          <th>T1</th><th>T2</th><th>T3</th><th>T4</th><th>T5</th>
+        </tr>
+      </thead>
+      <tbody id="data-body"></tbody>
+    </table>
+  </section>
+
+</div>
+
+<script type="module" src="dashboard.js"></script>
+</body>
+</html>
