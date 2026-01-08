@@ -1,6 +1,8 @@
 :root {
   --bg: #f6f8fb;
   --card: #ffffff;
+
+  /* BRAND COLORS (DO NOT CHANGE) */
   --dunlop: #e6b800;
   --komp: #d40000;
 }
@@ -18,7 +20,7 @@ body {
 
 /* ================= WRAPPER ================= */
 .wrap {
-  max-width: 1300px;
+  max-width: 1400px;
   margin: 16px auto;
   padding: 16px 20px;
 }
@@ -92,11 +94,12 @@ body {
   background: #d5d5d5;
 }
 
-/* ================= GRID CHART ================= */
-.grid-3 {
+/* ================= GRID CHART (4 SEJAJAR) ================= */
+.grid-4-inline {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr); /* 4 x 25% */
   gap: 16px;
+  margin-bottom: 18px;
 }
 
 /* ================= CARD ================= */
@@ -109,12 +112,12 @@ body {
 
 .card h3 {
   margin: 0 0 6px;
-  font-size: 14px;
+  font-size: 13px;
+  text-align: center;
 }
 
 /* ================= TABLE ================= */
 .table-wrap {
-  margin-top: 18px;
   background: var(--card);
   padding: 14px;
   border-radius: 12px;
@@ -122,13 +125,19 @@ body {
 }
 
 .table-wrap h3 {
-  margin: 0 0 6px;
+  margin: 0 0 10px;
+  font-size: 14px;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
+}
+
+thead th {
+  background: #fafafa;
+  border-bottom: 2px solid #ddd;
 }
 
 th,
@@ -142,7 +151,12 @@ tbody tr:nth-child(even) {
   background: #f9f9f9;
 }
 
-/* ================= COLOR LABEL ================= */
+/* rowspan middle align */
+td[rowspan] {
+  vertical-align: middle;
+}
+
+/* ================= BRAND COLOR ================= */
 .dunlop {
   color: var(--dunlop);
   font-weight: 600;
@@ -154,13 +168,17 @@ tbody tr:nth-child(even) {
 }
 
 /* ================= RESPONSIVE ================= */
-@media (max-width: 1000px) {
-  .grid-3 {
-    grid-template-columns: 1fr;
+@media (max-width: 1200px) {
+  .grid-4-inline {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 700px) {
+  .grid-4-inline {
+    grid-template-columns: 1fr;
+  }
+
   .dashboard-header {
     flex-direction: column;
     align-items: flex-start;
