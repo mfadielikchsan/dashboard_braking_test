@@ -70,42 +70,43 @@ function renderTables(rows) {
 
   const cell = v => (v == null ? "" : `${v} m`);
 
-  const brands = ["Dunlop", "Kompetitor"];
+  const conditions = [
+    { type: 1, label: "Dry" },
+    { type: 2, label: "Wet" }
+  ];
 
-  brands.forEach(brand => {
-    const brandData = rows.filter(r => r.brand === brand);
-    const dry = brandData.find(r => r.type === 1);
-    const wet = brandData.find(r => r.type === 2);
+  conditions.forEach(cond => {
+    const byType = rows.filter(r => r.type === cond.type);
 
-    if (dry) {
-      tb.innerHTML += `
-        <tr>
-          <td rowspan="2" class="${brand === "Dunlop" ? "dunlop" : "komp"}">${brand}</td>
-          <td>Dry</td>
-          <td>${cell(dry.t1)}</td>
-          <td>${cell(dry.t2)}</td>
-          <td>${cell(dry.t3)}</td>
-          <td>${cell(dry.t4)}</td>
-          <td>${cell(dry.t5)}</td>
-        </tr>
-      `;
-    }
+    const dunlop = byType.find(r => r.brand === "Dunlop") || {};
+    const komp = byType.find(r => r.brand === "Kompetitor") || {};
 
-    if (wet) {
-      tb.innerHTML += `
-        <tr>
-          <td>Wet</td>
-          <td>${cell(wet.t1)}</td>
-          <td>${cell(wet.t2)}</td>
-          <td>${cell(wet.t3)}</td>
-          <td>${cell(wet.t4)}</td>
-          <td>${cell(wet.t5)}</td>
-        </tr>
-      `;
-    }
+    /* ===== ROW 1 : DUNLOP ===== */
+    tb.innerHTML += `
+      <tr>
+        <td rowspan="2"><strong>${cond.label}</strong></td>
+        <td class="dunlop">Dunlop</td>
+        <td>${cell(dunlop.t1)}</td>
+        <td>${cell(dunlop.t2)}</td>
+        <td>${cell(dunlop.t3)}</td>
+        <td>${cell(dunlop.t4)}</td>
+        <td>${cell(dunlop.t5)}</td>
+      </tr>
+    `;
+
+    /* ===== ROW 2 : KOMPETITOR ===== */
+    tb.innerHTML += `
+      <tr>
+        <td class="komp">Kompetitor</td>
+        <td>${cell(komp.t1)}</td>
+        <td>${cell(komp.t2)}</td>
+        <td>${cell(komp.t3)}</td>
+        <td>${cell(komp.t4)}</td>
+        <td>${cell(komp.t5)}</td>
+      </tr>
+    `;
   });
 }
-
 
 /* ================= CHARTS ================= */
 function renderCharts(rows) {
