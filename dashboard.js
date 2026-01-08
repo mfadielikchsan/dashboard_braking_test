@@ -31,8 +31,9 @@ supabase
 /* ================= HELPERS ================= */
 function avg(values) {
   const valid = values.filter(v => typeof v === "number" && !isNaN(v));
-  if (!valid.length) return null;
-  return +(valid.reduce((a, b) => a + b, 0) / valid.length).toFixed(2);
+  return valid.length
+    ? +(valid.reduce((a, b) => a + b, 0) / valid.length).toFixed(2)
+    : null;
 }
 
 function getParams() {
@@ -54,177 +55,155 @@ async function loadData() {
     .lte("created_at", `${date} 23:59:59`);
 
   if (error) {
-    console.error(error);
+    console.error("Supabase error:", error);
     return;
   }
 
-  renderTable(data);
+  renderTables(data);
   renderCharts(data);
 }
 
-/* ================= TABLE ================= */
-function renderTable(rows) {
-  const tb = document.getElementById("data-body");
+/* ================= TABLES ================= */
+function renderTables(rows) {
+  const tb = document.getElementById("table-body");
   tb.innerHTML = "";
 
-  const cell = v => (v === null || v === undefined ? "" : `${v} m`);
+  const cell = v => (v == null ? "" : `${v} m`);
 
-  rows.forEach(r => {
-    tb.innerHTML += `
-      <tr>
-        <td class="${r.brand === "Dunlop" ? "dunlop" : "komp"}">${r.brand}</td>
-        <td>${cell(r.t1)}</td>
-        <td>${cell(r.t2)}</td>
-        <td>${cell(r.t3)}</td>
-        <td>${cell(r.t4)}</td>
-        <td>${cell(r.t5)}</td>
-      </tr>
-    `;
+  const brands = ["Dunlop", "Kompetitor"];
+
+  brands.forEach(brand => {
+    const brandData = rows.filter(r => r.brand === brand);
+    const dry = brandData.find(r => r.type === 1);
+    const wet = brandData.find(r => r.type === 2);
+
+    if (dry) {
+      tb.innerHTML += `
+        <tr>
+          <td rowspan="2" class="${brand === "Dunlop" ? "dunlop" : "komp"}">${brand}</td>
+          <td>Dry</td>
+          <td>${cell(dry.t1)}</td>
+          <td>${cell(dry.t2)}</td>
+          <td>${cell(dry.t3)}</td>
+          <td>${cell(dry.t4)}</td>
+          <td>${cell(dry.t5)}</td>
+        </tr>
+      `;
+    }
+
+    if (wet) {
+      tb.innerHTML += `
+        <tr>
+          <td>Wet</td>
+          <td>${cell(wet.t1)}</td>
+          <td>${cell(wet.t2)}</td>
+          <td>${cell(wet.t3)}</td>
+          <td>${cell(wet.t4)}</td>
+          <td>${cell(wet.t5)}</td>
+        </tr>
+      `;
+    }
   });
 }
 
+
 /* ================= CHARTS ================= */
 function renderCharts(rows) {
-  const d = rows.filter(r => r.brand === "Dunlop");
-  const k = rows.filter(r => r.brand === "Kompetitor");
-
   const keys = ["t1", "t2", "t3", "t4", "t5"];
 
-  const dAvg = keys.map(t => avg(d.map(r => r[t])));
-  const kAvg = keys.map(t => avg(k.map(r => r[t])));
+  const dry = rows.filter(r => r.type === 1);
+  const wet = rows.filter(r => r.type === 2);
 
-  const dTotal = avg(dAvg);
-  const kTotal = avg(kAvg);
+  const calcAvg = (data, brand) =>
+    keys.map(k => avg(data.filter(r => r.brand === brand).map(r => r[k])));
 
-  /* ===== BAR PER T ===== */
-  Highcharts.chart("chart-bar", {
-    chart: { type: "bar" },
-    title: { text: "" },
-    credits: { enabled: false },
+  /* ===== BAR CHART ===== */
+  function renderBar(container, data) {
+    Highcharts.chart(container, {
+      chart: { type: "bar" },
+      title: { text: "" },
+      credits: { enabled: false },
 
-    xAxis: { categories: ["T1", "T2", "T3", "T4", "T5"] },
+      xAxis: { categories: ["T1", "T2", "T3", "T4", "T5"] },
 
-    yAxis: {
-      min: 0,
-      max: 8,
-      title: { text: "Meter" },
-      labels: { format: "{value} m" }
-    },
-
-    tooltip: { valueSuffix: " m" },
-
-    plotOptions: {
-      bar: {
-        dataLabels: {
-          enabled: true,
-          formatter() {
-            return this.y === null ? "" : `${this.y} m`;
-          },
-          style: { fontWeight: "600" }
-        }
-      }
-    },
-
-    series: [
-      {
-        name: "Dunlop",
-        data: dAvg,
-        color: "#e6b800",
-        connectNulls: true
+      yAxis: {
+        title: { text: "Meter" },
+        labels: { format: "{value} m" }
       },
-      {
-        name: "Kompetitor",
-        data: kAvg,
-        color: "#d40000",
-        connectNulls: true
-      }
-    ]
-  });
 
-  /* ===== AVG TOTAL ===== */
-  Highcharts.chart("chart-avg", {
-    chart: { type: "bar" },
-    title: { text: "" },
-    credits: { enabled: false },
+      tooltip: { valueSuffix: " m" },
 
-    xAxis: { categories: ["Dunlop", "Kompetitor"] },
-
-    yAxis: {
-      min: 0,
-      max: 8,
-      title: { text: "Meter" },
-      labels: { format: "{value} m" }
-    },
-
-    tooltip: { valueSuffix: " m" },
-
-    series: [
-      {
-        name: "Average",
-        data: [
-          { y: dTotal, color: "#e6b800" },
-          { y: kTotal, color: "#d40000" }
-        ],
-        dataLabels: {
-          enabled: true,
-          formatter() {
-            return this.y === null ? "" : `${this.y} m`;
+      plotOptions: {
+        bar: {
+          dataLabels: {
+            enabled: true,
+            formatter() {
+              return this.y == null ? "" : `${this.y} m`;
+            }
           }
         }
-      }
-    ]
-  });
-
-  /* ===== TREND ===== */
-  Highcharts.chart("chart-trend", {
-    chart: { type: "line" },
-    title: { text: "" },
-    credits: { enabled: false },
-
-    xAxis: { categories: ["T1", "T2", "T3", "T4", "T5"] },
-
-    yAxis: {
-      min: 0,
-      max: 8,
-      title: { text: "Meter" }
-    },
-
-    tooltip: { enabled: false },
-
-    plotOptions: {
-      line: {
-        connectNulls: true,
-        dataLabels: { enabled: false }
-      }
-    },
-
-    series: [
-      {
-        name: "Dunlop",
-        data: dAvg,
-        color: "#e6b800"
       },
-      {
-        name: "Kompetitor",
-        data: kAvg,
-        color: "#d40000"
+
+      series: [
+        {
+          name: "Dunlop",
+          data: calcAvg(data, "Dunlop"),
+          color: "#e6b800",
+          connectNulls: true
+        },
+        {
+          name: "Kompetitor",
+          data: calcAvg(data, "Kompetitor"),
+          color: "#d40000",
+          connectNulls: true
+        }
+      ]
+    });
+  }
+
+  /* ===== AVG COMPARISON ===== */
+  function renderAvg(container, data) {
+    const dAvg = avg(calcAvg(data, "Dunlop"));
+    const kAvg = avg(calcAvg(data, "Kompetitor"));
+
+    Highcharts.chart(container, {
+      chart: { type: "bar" },
+      title: { text: "" },
+      credits: { enabled: false },
+
+      xAxis: { categories: ["Dunlop", "Kompetitor"] },
+
+      yAxis: {
+        title: { text: "Meter" },
+        labels: { format: "{value} m" }
       },
-      {
-        name: "AVG Dunlop",
-        data: Array(5).fill(dTotal),
-        color: "#e6b800",
-        dashStyle: "ShortDash",
-        enableMouseTracking: false
-      },
-      {
-        name: "AVG Kompetitor",
-        data: Array(5).fill(kTotal),
-        color: "#d40000",
-        dashStyle: "ShortDash",
-        enableMouseTracking: false
-      }
-    ]
-  });
+
+      tooltip: { valueSuffix: " m" },
+
+      series: [
+        {
+          name: "Average",
+          data: [
+            { y: dAvg, color: "#e6b800" },
+            { y: kAvg, color: "#d40000" }
+          ],
+          dataLabels: {
+            enabled: true,
+            formatter() {
+              return this.y == null ? "" : `${this.y} m`;
+            }
+          }
+        }
+      ]
+    });
+  }
+
+  /* ===== RENDER ALL ===== */
+  renderBar("chart-bar-dry", dry);
+  renderBar("chart-bar-wet", wet);
+
+  renderAvg("chart-avg-dry", dry);
+  renderAvg("chart-avg-wet", wet);
 }
 
 /* ================= INIT ================= */
